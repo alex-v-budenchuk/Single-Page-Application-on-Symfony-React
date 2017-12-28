@@ -1,0 +1,7 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+    {% for track in tracks %}
+        {{ track.name }}
+    {% endfor %}
+{% endblock %}
