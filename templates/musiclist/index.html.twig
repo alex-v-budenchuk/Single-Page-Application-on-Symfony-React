@@ -1,7 +1,10 @@
 {% extends 'base.html.twig' %}
 
 {% block body %}
-    {% for track in tracks %}
-        {{ track.name }}
-    {% endfor %}
+    <div id="main" data-tracks="{{ tracks|json_encode|e('html_attr') }}">
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    <script src="{{ asset('build/js/app.js') }}"></script>
 {% endblock %}
