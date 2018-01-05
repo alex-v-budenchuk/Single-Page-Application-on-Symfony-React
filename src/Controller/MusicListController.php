@@ -3,8 +3,9 @@
 namespace App\Controller;
 
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\HttpFoundation\Response;
 
 use App\Entity\Track;
 
@@ -18,14 +19,35 @@ class MusicListController extends Controller
     }
 
     /**
-     * @Route("/", name="root_url")
+     * @Route("/", name="index")
      */
     public function index()
     {
-        $repository = $this->getDoctrine()->getRepository(Track::class);
-        $tracks = $repository->findAll();
+        return $this->render('musiclist/index.html.twig');
+    }
 
-        return $this->render('musiclist/index.html.twig', array('tracks' => $tracks));
+    /**
+     * @Route("/load-tracks", name="load_tracks")
+     */
+    public function loadTracks(Request $request)
+    {
+        $params = json_decode($request->getContent(), true);
+        $offset = $params['start'];
+        $limit = $params['end'] + 1 - $offset;
+
+        $repository = $this->getDoctrine()->getRepository(Track::class);
+        $tracks = $repository->findBy([], null, $limit, $offset);
+
+        return new JsonResponse($tracks);
+    }
+
+    /**
+     * @Route("/get-tracks-count", name="get_tracks_count")
+     */
+    public function getTracksCount()
+    {
+        $repository = $this->getDoctrine()->getRepository(Track::class);
+        return new JsonResponse($repository->count([]));
     }
 
     /**
