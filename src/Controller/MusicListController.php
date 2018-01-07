@@ -23,7 +23,18 @@ class MusicListController extends Controller
      */
     public function index()
     {
-        return $this->render('musiclist/index.html.twig');
+        $em = $this->getDoctrine()->getManager();
+        $artists = $em->createQuery("SELECT DISTINCT(t.artist) FROM App\Entity\Track t ORDER BY t.artist ASC")->getResult();
+        $genres = $em->createQuery("SELECT DISTINCT(t.genre) FROM App\Entity\Track t ORDER BY t.genre ASC")->getResult();
+        $years = $em->createQuery("SELECT DISTINCT(t.year) FROM App\Entity\Track t ORDER BY t.year ASC")->getResult();
+
+        return $this->render('musiclist/index.html.twig', [
+            'filter_values' => [
+                'artists' => array_map('current', $artists),
+                'genres' => array_map('current', $genres),
+                'years' =>  array_map('current', $years),
+            ]
+        ]);
     }
 
     /**

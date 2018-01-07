@@ -5,7 +5,7 @@
 {% endblock %}
 
 {% block body %}
-    <div id="main"></div>
+    <div id="main" data-filter-values="{{ filter_values|json_encode|e('html_attr') }}"></div>
 {% endblock %}
 
 {% block javascripts %}

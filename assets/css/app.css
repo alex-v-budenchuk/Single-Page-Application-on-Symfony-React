@@ -2,11 +2,148 @@ a {
     cursor: pointer;
 }
 
-.pagination {
+.container {
+    width: 1080px;
+    margin: 0 100px;
+}
+
+.filters {
+    width: 200px;
     display: inline-block;
-    padding-left: 0;
-    margin: 20px 0;
+    vertical-align:top;
+}
+.filter {
+    width: 180px;
+    margin-bottom: 20px;
+    color: #337ab7;
+    border: 1px solid #337ab7;
     border-radius: 4px;
+    background-color: #fff;
+    padding: 6px 12px;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.main-content {
+    width: 880px;
+    display: inline-block;
+}
+
+
+.arrow {
+    width: 0;
+    height: 0;
+    margin-right: 5px;
+}
+.arrow.up {
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-bottom: 5px solid white;
+}
+.arrow.down {
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-top: 5px solid white;
+}
+
+.tracks-table{
+    width: 100%;
+    display: inline-block;
+}
+.tracks-table-row {
+    display: table-row;
+}
+.tracks-table-body > div:nth-child(even) {
+    background-color: #EEE;
+}
+.tracks-table-cell, .tracks-table-heading {
+    border: 1px solid #337ab7;
+    display: table-cell;
+    padding: 3px 10px;
+    color: #23527c;
+    line-height: 1.3333333;
+}
+.tracks-table-cell:first-child {
+    width: 200px;
+}
+.tracks-table-cell:nth-child(2) {
+    width: 480px;
+}
+.tracks-table-cell:nth-child(3) {
+    width: 150px;
+}
+.tracks-table-cell:last-child {
+    width: 50px;
+}
+.tracks-table-cell div {
+    display: inline-block;
+    vertical-align: middle;
+}
+.tracks-table-cell div div {
+    display: block;
+    vertical-align: middle;
+    margin: 3px 5px 3px 0;
+}
+.tracks-table-heading {
+    background-color: #337ab7;
+    display: table-header-group;
+    font-weight: bold;
+    cursor: pointer;
+}
+.tracks-table-heading .tracks-table-cell {
+    color: #fff;
+}
+.tracks-table-heading .tracks-table-cell:not(:first-child) {
+    border-left: 1px solid #fff;
+}
+.tracks-table-foot {
+    background-color: #EEE;
+    display: table-footer-group;
+    font-weight: bold;
+}
+.tracks-table-body {
+    display: table-row-group;
+}
+
+.tracks-table-heading > .tracks-table-row > .tracks-table-cell,
+.tracks-table-body > div:not(:last-child) > .tracks-table-cell {
+    border-bottom: none;
+}
+.tracks-table-heading > .tracks-table-row > div:not(:last-child),
+.tracks-table-body > div.tracks-table-row > div:not(:last-child) {
+    border-right: none;
+}
+
+.tracks-table-heading > .tracks-table-row > div:first-child {
+    border-top-left-radius: 4px;
+}
+.tracks-table-heading > .tracks-table-row > div:last-child {
+    border-top-right-radius: 4px;
+}
+.tracks-table-body > div:last-child > div:first-child {
+    border-bottom-left-radius: 4px;
+}
+.tracks-table-body > div:last-child > div:last-child {
+    border-bottom-right-radius: 4px;
+}
+
+.pagination-container {
+    width: 660px;
+    display: inline-block;
+    margin: 20px 0;
+}
+.pagination-container.right {
+    width: 220px;
+    margin-left:auto;
+    margin-right: 0;
+}
+.pagination {
+    padding-left: 0;
+    border-radius: 4px;
+    float: left;
+}
+.pagination-container.right .pagination {
+    float: right;
 }
 .pagination > li {
     display: inline;
@@ -65,38 +202,6 @@ a {
     cursor: not-allowed;
     background-color: #fff;
     border-color: #ddd;
-}
-.pagination-lg > li > a,
-.pagination-lg > li > span {
-    padding: 10px 16px;
-    font-size: 18px;
-    line-height: 1.3333333;
-}
-.pagination-lg > li:first-child > a,
-.pagination-lg > li:first-child > span {
-    border-top-left-radius: 6px;
-    border-bottom-left-radius: 6px;
-}
-.pagination-lg > li:last-child > a,
-.pagination-lg > li:last-child > span {
-    border-top-right-radius: 6px;
-    border-bottom-right-radius: 6px;
-}
-.pagination-sm > li > a,
-.pagination-sm > li > span {
-    padding: 5px 10px;
-    font-size: 12px;
-    line-height: 1.5;
-}
-.pagination-sm > li:first-child > a,
-.pagination-sm > li:first-child > span {
-    border-top-left-radius: 3px;
-    border-bottom-left-radius: 3px;
-}
-.pagination-sm > li:last-child > a,
-.pagination-sm > li:last-child > span {
-    border-top-right-radius: 3px;
-    border-bottom-right-radius: 3px;
 }
 .pager {
     padding-left: 0;

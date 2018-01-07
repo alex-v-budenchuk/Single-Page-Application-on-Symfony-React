@@ -8,6 +8,7 @@ class App extends React.Component {
         super(props);
 
         this.state = {
+            filters: JSON.parse(props.filterValues),
             tracks: [],
             totalCount: 0,
             startIndex: 0,
@@ -38,6 +39,7 @@ class App extends React.Component {
     getTracksCount() {
         return axios.post('/get-tracks-count');
     }
+
     onPageChanged(start, end) {
         let tracks = this.state.tracks;
         if (!this.allTracksLoaded(tracks, start, end)) {
@@ -52,15 +54,18 @@ class App extends React.Component {
         } else
             this.setState({ startIndex: start, endIndex: end });
     }
+
     allTracksLoaded(tracks, start, end) {
         end = end < start
             ? this.state.totalCount - 1
             : end;
         return _.filter(tracks, function(t) { return _.contains(_.range(start, end + 1), t.key); }).length === _.range(start, end + 1).length
     }
+
     mergeTracks(tracks1, tracks2) {
         return _.uniq(_.union(tracks1, _.map(tracks2, (t, i) => { return { key: parseInt(i), value: t } })), function(item) {return item.key;});
     }
+
     render() {
         let tracks = this.state.tracks;
         if (tracks.length === 0)
@@ -74,12 +79,36 @@ class App extends React.Component {
                 : t.key >= startIndex || t.key <= endIndex
         }), function(t) { return t.key < startIndex; });
 
-        return (<div>
-                    <div>{shownTracks.map((track) => this.renderTrack(track.value))}</div>
-                    <Paginator
-                        totalCount={this.state.totalCount}
-                        onPageChanged={this.onPageChanged}
-                    />
+        return (<div className="container">
+                    <div className="filters">
+                        <Filter values={_.union(["< any artist >"], this.state.filters.artists)} />
+                        <Filter values={_.union(["< any genre >"], this.state.filters.genres)} />
+                        <Filter values={_.union(["< any year >"], this.state.filters.years)} />
+                    </div>
+                    <div className="main-content">
+                        <div className="tracks-table">
+                            <div className="tracks-table-heading">
+                                <div className="tracks-table-row">
+                                    {["Artist", "Name", "Genre", "Year"].map((col) =>
+                                        <div className="tracks-table-cell">
+                                            <div>
+                                                <div className="arrow up"></div>
+                                                <div className="arrow down"></div>
+                                            </div>
+                                            <div>{col}</div>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                            <div className="tracks-table-body">
+                                {shownTracks.map((track) => this.renderTrack(track.value))}
+                            </div>
+                        </div>
+                        <Paginator
+                            totalCount={this.state.totalCount}
+                            onPageChanged={this.onPageChanged}
+                        />
+                    </div>
                 </div>
             );
     }
@@ -90,7 +119,26 @@ class App extends React.Component {
 
 class Track extends React.Component {
     render() {
-        return (<div>{this.props.value.name}</div>);
+        return (
+            <div className="tracks-table-row">
+                <div className="tracks-table-cell">{this.props.value.artist}</div>
+                <div className="tracks-table-cell">{this.props.value.name}</div>
+                <div className="tracks-table-cell">{this.props.value.genre}</div>
+                <div className="tracks-table-cell">{this.props.value.year}</div>
+            </div>
+        );
+    }
+}
+
+class Filter extends React.Component {
+    render() {
+        return (
+            <select className="filter">
+                {this.props.values.map((value) =>
+                    <option value={value}>{value}</option>
+                )}
+            </select>
+        );
     }
 }
 
@@ -195,30 +243,41 @@ class Paginator extends React.Component {
         if (params.pages === undefined)
             return null;
 
+        let firstButton = params.infinite ? null : <li className={params.currentPage === 1 ? 'disabled' : ''}><a onClick={() => this.setPage(0)}>First</a></li>;
+        let lastButton = params.infinite ? null : <li className={params.currentPage === params.totalPages ? 'disabled' : ''}><a onClick={() => this.setPage((params.totalPages - 1) * params.pageSize)}>Last</a></li>;
+
         return (
             <div>
-                <ul className="pagination">
-                    <li><a onClick={() => this.setPage(0)}>First</a></li>
-                    <li><a onClick={() => this.setPage(params.startIndex - params.pageSize)}>Previous</a></li>
-                    {params.pages.map((page, index) =>
-                        <li key={"page" + index} className={params.currentPage === page ? 'active' : ''} onClick={() => this.setPage((page - 1) * params.pageSize)}>
-                            <a>{page}</a>
+                <div className="pagination-container">
+                    <ul className="pagination">
+                        {firstButton}
+                        <li className={params.currentPage === 1 ? 'disabled' : ''}>
+                            <a onClick={() => this.setPage(params.startIndex - params.pageSize)}>Previous</a>
                         </li>
-                    )}
-                    <li><a onClick={() => this.setPage(params.startIndex + params.pageSize)}>Next</a></li>
-                    <li><a>Last</a></li>
-                </ul>
-                <ul className="pagination">
-                    {[10,20,50,100,0].map((size) =>
-                        <li key={"pageSize" + size} className={
-                            params.infinite
-                                ? size === 0 ? 'active' : ''
-                                : params.pageSize === size ? 'active' : ''
-                        } onClick={() => this.setPageSize(size)}>
-                            <a>{size === 0 ? String.fromCharCode(8734) : size}</a>
+                        {params.pages.map((page, index) =>
+                            <li key={"page" + index} className={params.currentPage === page ? 'active' : ''} onClick={() => this.setPage((page - 1) * params.pageSize)}>
+                                <a>{page}</a>
+                            </li>
+                        )}
+                        <li className={params.currentPage !== null && params.currentPage === params.totalPages ? 'disabled' : ''}>
+                            <a onClick={() => this.setPage(params.startIndex + params.pageSize)}>Next</a>
                         </li>
-                    )}
-                </ul>
+                        {lastButton}
+                    </ul>
+                </div>
+                <div className="pagination-container right">
+                    <ul className="pagination">
+                        {[10,20,50,100,0].map((size) =>
+                            <li key={"pageSize" + size} className={
+                                params.infinite
+                                    ? size === 0 ? 'active' : ''
+                                    : params.pageSize === size ? 'active' : ''
+                            }>
+                                <a onClick={() => this.setPageSize(size)}>{size === 0 ? String.fromCharCode(8734) : size}</a>
+                            </li>
+                        )}
+                    </ul>
+                </div>
             </div>
         );
     }
