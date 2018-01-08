@@ -12,7 +12,9 @@ Encore
 
     // uncomment to define the assets of the project
     .addEntry('js/app', './assets/js/app.jsx')
+    .addEntry('js/paginator', './assets/js/paginator.jsx')
     .addStyleEntry('css/app', './assets/css/app.css')
+    .addStyleEntry('css/paginator', './assets/css/paginator.css')
 
     // uncomment if you use Sass/SCSS files
     // .enableSassLoader()
