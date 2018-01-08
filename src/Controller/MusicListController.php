@@ -43,11 +43,18 @@ class MusicListController extends Controller
     public function loadTracks(Request $request)
     {
         $params = json_decode($request->getContent(), true);
+        $filters = [];
+        if (isset($params['filters'])) {
+            foreach ($params['filters'] as $filter) {
+                $filters[$filter["name"]] = $filter["value"];
+            }
+        }
+        $order = isset($params['sortBy']) && isset($params['sortOrder']) ? array(strtolower($params['sortBy']) => $params['sortOrder']) : null;
         $offset = $params['start'];
         $limit = $params['end'] + 1 - $offset;
 
         $repository = $this->getDoctrine()->getRepository(Track::class);
-        $tracks = $repository->findBy([], null, $limit, $offset);
+        $tracks = $repository->findBy($filters, $order, $limit, $offset);
 
         return new JsonResponse($tracks);
     }
@@ -55,10 +62,19 @@ class MusicListController extends Controller
     /**
      * @Route("/get-tracks-count", name="get_tracks_count")
      */
-    public function getTracksCount()
+    public function getTracksCount(Request $request)
     {
+        $params = json_decode($request->getContent(), true);
+
+        $filters = [];
+        if (isset($params['filters'])) {
+            foreach ($params['filters'] as $filter) {
+                $filters[$filter["name"]] = $filter["value"];
+            }
+        }
+
         $repository = $this->getDoctrine()->getRepository(Track::class);
-        return new JsonResponse($repository->count([]));
+        return new JsonResponse($repository->count($filters));
     }
 
     /**

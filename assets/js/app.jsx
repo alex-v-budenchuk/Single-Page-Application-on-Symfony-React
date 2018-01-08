@@ -15,6 +15,17 @@ class App extends React.Component {
             endIndex: 0
         };
 
+        this.filters = [
+            { name: "artist", value: null },
+            { name: "genre", value: null },
+            { name: "year", value: null }
+        ];
+        this.sort = {
+            by: null,
+            order: null
+        };
+
+        this.onFilterChanged = this.onFilterChanged.bind(this);
         this.onPageChanged = this.onPageChanged.bind(this);
 
         this.init();
@@ -27,6 +38,7 @@ class App extends React.Component {
                     tracks: _.map(tracksData.data, (t, i) => { return { key: i, value: t } }),
                     totalCount: cntData.data
                 });
+                self.refs.paginator.setCount(cntData.data);
             })).catch(function (error) {
                 console.log(error);
             });
@@ -34,10 +46,36 @@ class App extends React.Component {
     getTracks(start, end) {
         start = start || 0;
         end = end || 9;
-        return axios.post('/load-tracks', { start: start, end: end });
+        return axios.post('/load-tracks', {
+            filters: _.filter(this.filters, function(f) { return f.value !== null }),
+            sortBy: this.sort.by,
+            sortOrder: this.sort.order,
+            start: start,
+            end: end });
     }
     getTracksCount() {
-        return axios.post('/get-tracks-count');
+        return axios.post('/get-tracks-count', {
+            filters: _.filter(this.filters, function(f) { return f.value !== null })
+        });
+    }
+
+    sortBy(col) {
+        let sortOrder = col === this.state.sortBy && this.state.sortOrder === "ASC"
+            ? "DESC"
+            : "ASC";
+        this.sort = {
+            order: this.sort.by && this.sort.order === "ASC"
+                ? "DESC"
+                : "ASC",
+            by: col
+        };
+        this.init();
+    }
+
+    onFilterChanged(filter, value) {
+        _.findWhere(this.filters, { name: filter }).value = value === "" ? null : value;
+
+        this.init();
     }
 
     onPageChanged(start, end) {
@@ -81,17 +119,23 @@ class App extends React.Component {
 
         return (<div className="container">
                     <div className="filters">
-                        <Filter values={_.union(["< any artist >"], this.state.filters.artists)} />
-                        <Filter values={_.union(["< any genre >"], this.state.filters.genres)} />
-                        <Filter values={_.union(["< any year >"], this.state.filters.years)} />
+                        <Filter values={this.state.filters.artists} name="artist" onChanged={this.onFilterChanged} />
+                        <Filter values={this.state.filters.genres}  name="genre" onChanged={this.onFilterChanged} />
+                        <Filter values={this.state.filters.years} name="year" onChanged={this.onFilterChanged} />
                     </div>
                     <div className="main-content">
                         <div className="tracks-table">
                             <div className="tracks-table-heading">
                                 <div className="tracks-table-row">
                                     {["Artist", "Name", "Genre", "Year"].map((col) =>
-                                        <div className="tracks-table-cell">
-                                            <div>
+                                        <div key={"col" + col} className="tracks-table-cell" onClick={() => this.sortBy(col)}>
+                                            <div className={
+                                                this.sort.by === col && this.sort.order === "ASC"
+                                                    ? "arrows down"
+                                                    : this.sort.by === col && this.sort.order === "DESC"
+                                                        ? "arrows up"
+                                                        : "arrows"
+                                            }>
                                                 <div className="arrow up"></div>
                                                 <div className="arrow down"></div>
                                             </div>
@@ -105,6 +149,7 @@ class App extends React.Component {
                             </div>
                         </div>
                         <Paginator
+                            ref="paginator"
                             totalCount={this.state.totalCount}
                             onPageChanged={this.onPageChanged}
                         />
@@ -131,11 +176,15 @@ class Track extends React.Component {
 }
 
 class Filter extends React.Component {
+    onChange(self, event) {
+        self.props.onChanged(self.props.name, event.target.value);
+    }
     render() {
         return (
-            <select className="filter">
+            <select key={"filter"+this.props.name} className="filter" onChange={(e) => this.onChange(this, e)} >
+                <option key={"filter"+this.props.name+"Any"} value="">{"< any " + this.props.name + " >"}</option>
                 {this.props.values.map((value) =>
-                    <option value={value}>{value}</option>
+                    <option key={"filter"+this.props.name +value} value={value}>{value}</option>
                 )}
             </select>
         );
@@ -163,13 +212,18 @@ class Paginator extends React.Component {
         this.props.onPageChanged(params.startIndex, params.endIndex);
         this.setState({ params: params });
     }
+    setCount(cnt) {
+        let params = this.getPager(0, this.state.params.pageSize, cnt);
+        this.props.onPageChanged(params.startIndex, params.endIndex);
+        this.setState({ params: params });
+    }
     setPage(from) {
         let params = this.getPager(from);
         this.props.onPageChanged(params.startIndex, params.endIndex);
         this.setState({ params: params });
     }
-    getPager(from, pageSize) {
-        let totalCount = this.state.params.totalCount;
+    getPager(from, pageSize, totalCount) {
+        totalCount = totalCount || this.state.params.totalCount;
         pageSize = pageSize !== undefined
             ? pageSize
             : (this.state.params.infinite ? 0 : this.state.params.pageSize);
